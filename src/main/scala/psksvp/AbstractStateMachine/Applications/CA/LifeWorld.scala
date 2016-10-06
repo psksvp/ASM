@@ -258,7 +258,7 @@ object ASMLife
     val cc = new Conway(60)
     val mr = new MushroomFairyRing(60)
     val fr = new ForrestFire(60)
-    val asm = new Machine(mr, Some(mr))
+    val asm = new Machine(bb, Some(bb))
     asm.run(1000)
     /*
     for(i <- 1 to 10)
