@@ -259,7 +259,7 @@ object ASMLife
     val mr = new MushroomFairyRing(60)
     val fr = new ForrestFire(60)
     val asm = new Machine(bb, Some(bb))
-    asm.run(1000)
+    asm.run(100)
     /*
     for(i <- 1 to 10)
     {
