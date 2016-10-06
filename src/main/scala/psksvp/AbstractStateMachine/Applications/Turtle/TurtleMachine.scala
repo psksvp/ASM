@@ -191,7 +191,7 @@ object TurtleProgram
     val rule = new TurtleMachine(instructions)
     val display = new Display(rule)
     val machine = new Machine(rule, Some(display))
-    machine.run
+    machine.run()
   }
 
 

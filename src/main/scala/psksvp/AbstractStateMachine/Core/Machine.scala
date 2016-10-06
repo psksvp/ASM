@@ -19,16 +19,18 @@ class Machine(rule:Rule, visualizer: Option[Visualizer] = None)
     states = psksvp.removeDuplicate(s.toList ::: states)
   }
 
-  def run:Unit=
+  def run(nStep:Int = -1):Unit=
   {
     require(states != Nil)
 
-    var s = 0
+    var stepCount = 0
     var fixed = step(0)
-    while(!fixed)
+    var keepRunning = true
+    while(!fixed && keepRunning)
     {
-      s = s + 1
-      fixed = step(s)
+      stepCount = stepCount + 1
+      fixed = step(stepCount)
+      keepRunning = if(-1 != nStep) stepCount < nStep else true
     }
   }
 
