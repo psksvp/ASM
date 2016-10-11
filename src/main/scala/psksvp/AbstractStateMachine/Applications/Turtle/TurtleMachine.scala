@@ -176,10 +176,9 @@ object TurtleProgram
   def main(args:Array[String]):Unit=
   {
     val instructions = Move(10, 300) :: spiral(200)
-    val rule = new TurtleMachine(instructions)
-    val display = new Display(rule)
-    val machine = new Simulator(rule, Some(display))
-    machine.run()
+    val turtle = new TurtleMachine(instructions)
+    val sim = new Simulator(turtle, Some(new Display(turtle)))
+    sim.run()
   }
 
 
