@@ -3,54 +3,47 @@ package psksvp.AbstractStateMachine.Core
 /**
   * Created by psksvp on 1/06/2016.
   */
-
-class Machine(rule:Rule, visualizer: Option[Visualizer] = None)
+abstract class Machine(val name:String)
 {
-  private var states:List[State[_,_]] = rule.listOfStates
-  if(false == rule.init)
-    sys.error(s"Init rule ${rule.name} fail")
-  else
-    update()
+  implicit def mutator2Value[L, V](a:State[L, V]#Mutator):V = State.valueOf(a)
+  implicit def state2Set[L, V](a:State[L, V]):Set[(L, V)] = State.valueOf(a)
+  implicit def nullaryState2Value[V](s:NullaryState[V]):V = State.valueOf(s)
 
-  private def update():Unit = states.foreach(_.commit)
+  private var stateList:List[State[_, _]] = Nil
 
-  def addState(s:State[_,_]*):Unit =
+  def state[L, V](name:String):State[L, V]=
   {
-    states = psksvp.removeDuplicate(s.toList ::: states)
+    val s = State[L, V](name)
+    stateList = stateList :+ s
+    s
   }
 
-  def run(nStep:Int = -1):Unit=
+  def state[V](name:String):NullaryState[V]=
   {
-    require(states != Nil)
+    val s = State[V](name)
+    stateList = stateList :+ s
+    s
+  }
 
-    var stepCount = 0
-    var fixed = step(0)
-    var keepRunning = true
-    while(!fixed && keepRunning)
+
+  def forall[L, V](s:State[L, V], withProperty:L=>Boolean = (l:L) => true)
+                  (r:(L)=>Unit): Unit =
+  {
+    s.locations.foreach
     {
-      stepCount = stepCount + 1
-      fixed = step(stepCount)
-      keepRunning = if(-1 != nStep) stepCount < nStep else true
+      case l if withProperty(l) => r(l)
     }
   }
 
-  def step(s:Int):Boolean =
+  def skip:Unit=
   {
-    rule.main
-    val fixed = hasReachedFixedPoint
-    update()
-    visualizer match
-    {
-      case Some(v) => v.view(rule.listOfStates, s)
-      case _       =>
-    }
-    fixed
+
   }
 
-  def hasReachedFixedPoint:Boolean =
-  {
-    val fixed = for(s <- states) yield(s.isFixedPoint)
-    fixed.reduce(_ & _)
-  }
+  def listOfStates:List[State[_,_]] = stateList
 
+  // must override the below functions
+
+  def init:Boolean
+  def main:Unit
 }

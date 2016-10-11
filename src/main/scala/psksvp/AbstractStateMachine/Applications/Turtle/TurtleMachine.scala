@@ -11,7 +11,7 @@ import psksvp.{pop, push, top}
   *
   * @param instructions
   */
-class TurtleMachine(instructions:List[Instruction]) extends Rule("Turtle")
+class TurtleMachine(instructions:List[Instruction]) extends Machine("Turtle")
 {
   type Stream = Set[(Int, Instruction)]
   type Coord2D = (Float, Float)
@@ -46,7 +46,7 @@ class TurtleMachine(instructions:List[Instruction]) extends Rule("Turtle")
     {
       val inst = stream(pc)
       execute(inst)
-      println(s"executed instruction $inst")
+      //println(s"executed instruction $inst")
     }
     else
       println("Turtle machine halted")
@@ -131,7 +131,7 @@ object TurtleMachine
 
   def toStream(ls:List[Instruction]):Set[(Int, Instruction)] =
   {
-    (for(i <- 0 until ls.length) yield((i, ls(i)))).toSet
+    (for(i <- 0 until ls.length) yield (i, ls(i)) ).toSet
   }
 }
 
@@ -149,6 +149,7 @@ class Display(tm:TurtleMachine) extends Visualizer
 
   override def view(states:List[State[_, _]], nthStep:Int):Unit =
   {
+    states.foreach(println(_))
     val g = ctx.beginDraw()
     g.setColor(Color.BLACK)
     val (_, _, p2, _, _) = tm.currentFrame
@@ -162,23 +163,36 @@ class Display(tm:TurtleMachine) extends Visualizer
   }
 }
 
-//class Display2(tm:TurtleMachine) extends Visualizer
-//{
-//  import psksvp.Graphics.ProcessingAppletDisplay
-//  val display = new ProcessingAppletDisplay(400, 400)
-//  var p1:Option[(Float, Float)] = None
-//
-//  override def view(states:List[State[_, _]], nthStep:Int):Unit =
-//  {
-//    val (_, _, p2, _, _) = tm.currentFrame
-//    p1 match
-//    {
-//      case Some(coord) => display.drawLine(coord, p2)
-//      case _           =>
-//    }
-//    p1 = Some(p2)
-//  }
-//}
+class Display2(tm:TurtleMachine) extends Visualizer with psksvp.Graphics.DisplayResponder
+{
+  import psksvp.Graphics.DisplayContext
+  import psksvp.Graphics.ProcessingAppletDisplay
+  val display = new ProcessingAppletDisplay(400, 400)
+  val vertextList = new scala.collection.mutable.ListBuffer[(Float, Float)]
+  display.addResponder(this)
+
+  override def view(states:List[State[_, _]], nthStep:Int):Unit =
+  {
+    synchronized
+    {
+      val (_, _, pos, _, _) = tm.currentFrame
+      vertextList.append(pos)
+    }
+
+  }
+
+  override def draw(context: DisplayContext):Unit=
+  {
+    synchronized
+    {
+      if(vertextList.length > 1)
+      {
+        context.eraseBackground()
+        context.drawLines(vertextList)
+      }
+    }
+  }
+}
 
 /**
   *
@@ -189,8 +203,8 @@ object TurtleProgram
   {
     val instructions = Move(10, 300) :: spiral(200)
     val rule = new TurtleMachine(instructions)
-    val display = new Display(rule)
-    val machine = new Machine(rule, Some(display))
+    val display = new Display2(rule)
+    val machine = new Simulator(rule, Some(display))
     machine.run()
   }
 

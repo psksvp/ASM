@@ -82,6 +82,8 @@ class State[L, V](val name:String, stackSize:Int = 2) //extends com.typesafe.sca
   def =!= (other:State[L, V]):Boolean = !(this === other)
   def := (ls:Seq[(L, V)]):Unit = ls foreach { case (l, v) => setUpdate(l, v) }
   def := (ls:Set[(L, V)]):Unit = ls foreach { case (l, v) => setUpdate(l, v) }
+
+  override def toString = s"state $name: ${currents.toString}"
 }
 
 /**
