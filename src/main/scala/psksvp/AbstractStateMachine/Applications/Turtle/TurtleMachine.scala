@@ -135,35 +135,9 @@ object TurtleMachine
   }
 }
 
-/**
-  *
-  * @param tm
-  */
-class Display(tm:TurtleMachine) extends Visualizer
-{
-  import psksvp.GUI.DrawableDisplay
-  import java.awt.Color
 
-  val ctx = new DrawableDisplay(600, 400, "Turtle World")
-  var p1:Option[(Float, Float)] = None
 
-  override def view(states:List[State[_, _]], nthStep:Int):Unit =
-  {
-    states.foreach(println(_))
-    val g = ctx.beginDraw()
-    g.setColor(Color.BLACK)
-    val (_, _, p2, _, _) = tm.currentFrame
-    p1 match
-    {
-      case Some((x, y)) => g.drawLine(x.toInt, y.toInt, p2._1.toInt, p2._2.toInt)
-      case _            =>
-    }
-    p1 = Some(p2)
-    ctx.endDraw(g)
-  }
-}
-
-class Display2(tm:TurtleMachine) extends Visualizer with psksvp.Graphics.DisplayResponder
+class Display(tm:TurtleMachine) extends Visualizer with psksvp.Graphics.DisplayResponder
 {
   import psksvp.Graphics.DisplayContext
   import psksvp.Graphics.ProcessingAppletDisplay
@@ -203,7 +177,7 @@ object TurtleProgram
   {
     val instructions = Move(10, 300) :: spiral(200)
     val rule = new TurtleMachine(instructions)
-    val display = new Display2(rule)
+    val display = new Display(rule)
     val machine = new Simulator(rule, Some(display))
     machine.run()
   }
