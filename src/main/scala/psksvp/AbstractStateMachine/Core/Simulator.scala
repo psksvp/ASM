@@ -4,24 +4,19 @@ package psksvp.AbstractStateMachine.Core
   * Created by psksvp on 1/06/2016.
   */
 
-class Simulator(rule:Machine, visualizer: Option[Visualizer] = None)
+class Simulator(machine:Machine, visualizer: Option[Visualizer] = None)
 {
-  private var states:List[State[_,_]] = rule.listOfStates
-  if(false == rule.init)
-    sys.error(s"Init rule ${rule.name} fail")
+  if(false == machine.init)
+    sys.error(s"Init rule ${machine.name} fail")
   else
     update()
 
-  private def update():Unit = states.foreach(_.commit)
+  private def update():Unit = machine.listOfStates.foreach(_.commit)
 
-  def addState(s:State[_,_]*):Unit =
-  {
-    states = psksvp.removeDuplicate(s.toList ::: states)
-  }
 
   def run(nStep:Int = -1):Unit=
   {
-    require(states != Nil)
+    require(machine.listOfStates != Nil)
 
     var stepCount = 0
     var fixed = step(0)
@@ -36,12 +31,12 @@ class Simulator(rule:Machine, visualizer: Option[Visualizer] = None)
 
   def step(s:Int):Boolean =
   {
-    rule.main
+    machine.main
     val fixed = hasReachedFixedPoint
     update()
     visualizer match
     {
-      case Some(v) => v.view(rule.listOfStates, s)
+      case Some(v) => v.view(machine.listOfStates, s)
       case _       =>
     }
     fixed
@@ -49,7 +44,7 @@ class Simulator(rule:Machine, visualizer: Option[Visualizer] = None)
 
   def hasReachedFixedPoint:Boolean =
   {
-    val fixed = for(s <- states) yield s.isFixedPoint
+    val fixed = for(s <- machine.listOfStates) yield s.isFixedPoint
     fixed.reduce(_ & _)
   }
 }
